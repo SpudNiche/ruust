@@ -13,3 +13,11 @@ Cargo.lock
 # Added by cargo
 
 /target
+
+# Audio files
+*.mp3
+*.wav
+
+# Audio folders
+mp3/
+wav/
