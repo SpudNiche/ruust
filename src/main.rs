@@ -40,21 +40,29 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut num_samples: usize = 0;
 
-    // Dump all samples into a new audio file
-    let mut writer = hound::WavWriter::create("test.wav", spec).unwrap();
+    // Dump all samples into a vector
+    let mut in_buf: Vec<f32> = Vec::new();
     for sample in decoder.into_samples()? {
-        //let mut samp = &mut sample.unwrap();
-        //if (*samp + 0.1) < 1.0 {
-        //    // Print as f32 values (-1.0 -> 1.0)
-        //    *samp += 0.1;
-        //    println!("{:?}", samp);
-        //}
-
-        writer.write_sample(sample.unwrap()).unwrap();
-        // Print as 4, byte chunks, litte-endian
-        //println!("{:?}", &sample.unwrap().to_le_bytes());
-
+        in_buf.push(sample.unwrap());
         num_samples += 1;
+    }
+
+    let mut out_buf: Vec<f32> = Vec::new();
+    let coef: [f32; 4] = [1.0, 0.01, 0.01, 0.01];
+    let window_size: usize = 4;
+    for window in in_buf.windows(window_size) {
+        let mut result: f32 = 0.0;
+        for (i, w) in window.iter().enumerate() {
+            result += w*coef[i];
+        }
+        println!("{:?} = {}", window, result);
+        out_buf.push(result);
+    }
+
+    // Write the new vector to an audio file
+    let mut writer = hound::WavWriter::create("test.wav", spec).unwrap();
+    for b in out_buf {
+        writer.write_sample(b).unwrap();
     }
 
     eprintln!("{} samples(s) read.", num_samples);
