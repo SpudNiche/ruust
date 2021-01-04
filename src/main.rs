@@ -4,7 +4,7 @@
 
 // Test #1: "creak" library - dumps f32 samples of an audio file out to stdout
 
-use std::{env, io, io::Write};
+use std::{env};
 use creak;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -28,14 +28,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         info.sample_rate()
     );
 
-    let mut stdout = io::stdout();
     let mut num_samples: usize = 0;
 
     // Dump all samples to stdout
     for sample in decoder.into_samples()? {
-        // stdout.write(&sample?.to_le_bytes())?;
-        //print!("{:?}", &sample?.to_le_bytes());
-        println!("{:?}", &sample.unwrap());
+        let mut samp = &mut sample.unwrap();
+        if (*samp + 0.1) < 1.0 {
+            // Print as f32 values (-1.0 -> 1.0)
+            *samp += 0.1;
+            println!("{:?}", samp);
+        }
+
+        // Print as 4, byte chunks, litte-endian
+        //println!("{:?}", &sample.unwrap().to_le_bytes());
+
         num_samples += 1;
     }
 
